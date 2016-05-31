@@ -88,7 +88,9 @@ public class BonusWord {
 				break;
 			}
 		}
-				
+		
+		MorphemeServer.jta.setText(randomWord);
+		
 		if (randomWord.length() >= 6){
 		for (int h = 0; h < g.length; h++){
 			for (int j = 0; j < bonusWordExceptions.length; j++){

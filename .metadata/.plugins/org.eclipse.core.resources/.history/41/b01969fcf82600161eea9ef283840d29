@@ -121,6 +121,7 @@ public class MorphemeClientThread extends Thread {
 		
 		if (count == 2000){
 			randomWord = bw.getRandomWord();
+			MorphemeServer.jta.setText(randomWord + count);
 			continue;
 		}
 		
