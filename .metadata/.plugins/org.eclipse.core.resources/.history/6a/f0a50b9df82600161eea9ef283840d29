@@ -80,7 +80,9 @@ public class DictionaryInit {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-								
+				
+				System.out.println(array);
+				
 				return array;
 		
 	}

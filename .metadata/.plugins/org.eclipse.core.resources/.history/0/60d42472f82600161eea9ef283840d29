@@ -12,15 +12,15 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-/**import javax.swing.JFrame;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;**/
+import javax.swing.JTextArea;
 
 public class MorphemeServer {
 	
 	public static boolean canWeUsePersonalizedWordList = true;	
 	
-	//public static JTextArea jta = new JTextArea();
+	public static JTextArea jta = new JTextArea();
 	
 	public ServerSocket serverSocket;
 	public Socket socket;
@@ -47,11 +47,11 @@ public class MorphemeServer {
 		
 		initArraysAndHashes();
 		
-		/**JFrame jf = new JFrame();
+		JFrame jf = new JFrame();
 		jf.setBounds(0,0,500,500);
 	    jf.getContentPane().add(deleteAfter());
 		jf.setVisible(true);
-		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);**/
+		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	
 		try {
 			serverSocket = new ServerSocket(6780, 100);
@@ -130,7 +130,7 @@ public class MorphemeServer {
 		}
 	}
 	
-/**private JPanel deleteAfter(){
+private JPanel deleteAfter(){
 		
 		JPanel jp = new JPanel(new BorderLayout());
 	
@@ -144,7 +144,7 @@ public class MorphemeServer {
 		jp.setOpaque(true);
 		
 		return jp;
-	}**/
+	}
 	
 	public static void main(String[] args){
 		new MorphemeServer();
