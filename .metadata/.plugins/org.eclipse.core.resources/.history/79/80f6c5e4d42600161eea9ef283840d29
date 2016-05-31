@@ -1,0 +1,191 @@
+package Morpheme;
+
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+public class MorphemeClient {
+	
+	public int dictionary = 0;
+	public int percentageOfAccepted = 90;
+	public int boardDimensions = 6;
+	public int minimumWordLength = 6;
+	public int minimumWordCount = 100;
+	public int bonusWordGreaterThanOrEqualTo = 10;
+	public int bonusWordLessThanOrEqualTo = 14;
+	public int[] freq = {1000, 319, 439, 300, 600, 208, 230, 333, 900, 28, 194, 540, 388, 530, 760, 402, 28, 650, 480, 540, 475, 139, 166, 41, 250, 55}; 
+	
+	public int preferredSizeOfLetters = 300;
+	public int imageSizeInPixels = preferredSizeOfLetters / boardDimensions;
+	
+	public static ObjectOutputStream os;
+	public ObjectInputStream is;
+	public Socket socket;
+
+public static void main(String[] args){
+	new MorphemeClient();
+}
+
+public MorphemeClient() {
+	
+	setUpSocketAndStreams();
+	
+	JFrame jf = new JFrame();
+	jf.setBounds(0,0,500,500);
+    jf.getContentPane().add(deleteAfter());
+	jf.setVisible(true);
+	jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    
+	new Timer().schedule(
+		    new TimerTask() {
+
+		        @Override
+		        public void run() {
+		          mainActivity();
+		        }
+		        
+		    }, 0, 100);
+    
+    }
+
+public JPanel deleteAfter(){
+	
+	JPanel jp = new JPanel(new BorderLayout());
+	
+	JButton button = new JButton("Load Board");
+    jp.add(button, BorderLayout.CENTER);
+		
+	button.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent d){
+			
+			Object[] parametersArray = { "load board", dictionary, percentageOfAccepted, boardDimensions, minimumWordLength, minimumWordCount, bonusWordGreaterThanOrEqualTo, bonusWordLessThanOrEqualTo, freq };
+
+			ArrayList<Object> parameters = addElementsTo(parametersArray);
+			
+			send(parameters);
+			
+		}
+	});
+    
+    jp.setVisible(true);
+	jp.setOpaque(true);
+	return jp;
+	
+}
+
+
+public void mainActivity(){
+	
+	
+	if (socket.isConnected()){
+	String message = "";
+	
+	Object r;
+	try {
+		r = is.readObject();
+		
+		if (r instanceof ArrayList<?>){
+			
+		}
+		
+		if (r instanceof String){
+			
+			message = (String) r;
+			
+			if (message.startsWith("board")){
+				message = message.substring(5, message.length());
+				
+				System.out.println(message);
+			}
+		}
+	} catch (ClassNotFoundException e) {
+		close();
+	} catch (IOException e) {
+		close();
+	}
+	} else {
+		close();
+	}
+}
+
+	public static void send(Object message){
+	
+		try {
+			os.writeObject(message);
+			os.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	
+	}
+		
+	private void setUpSocketAndStreams(){
+		try {
+			socket = new Socket(InetAddress.getByName("127.0.0.1"), 6780);
+		} catch (UnknownHostException e){
+			
+			try {
+				socket.close();
+			} catch (IOException io){
+				io.printStackTrace();
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			os = new ObjectOutputStream(socket.getOutputStream());
+			is = new ObjectInputStream(socket.getInputStream());
+		} catch (IOException io){
+			
+			try {
+				os.close();
+				is.close();
+				socket.close();
+			} catch (IOException i){
+				i.printStackTrace();
+			}
+			
+		}
+	}
+
+private ArrayList<Object> addElementsTo(Object[] elements){
+	
+	ArrayList array = new ArrayList();
+	
+	for (int h = 0; h < elements.length; h++){
+		array.add(elements[h]);
+	}
+	
+	return array;
+}
+	
+	private void close(){
+		
+		try{
+			os.close();
+			is.close();
+			socket.close();
+		} catch (IOException io){
+			io.printStackTrace();
+		}
+	}
+	
+	
+}
