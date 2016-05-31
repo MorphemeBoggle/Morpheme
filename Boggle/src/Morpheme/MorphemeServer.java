@@ -3,6 +3,7 @@ package Morpheme;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,7 @@ public class MorphemeServer {
 	public static ArrayList<Hashtable<String, Integer>> potentialWordHashTables = new ArrayList<Hashtable<String, Integer>>();
 	public static ArrayList<ArrayList<ArrayList<String>>> letterLengthGrouping = new ArrayList<ArrayList<ArrayList<String>>>();
 	public static ArrayList<String> definitions;
-	public static ArrayList<String> personalWords;
+	public static Hashtable<String, Integer> personalWords;
 	public static Hashtable<String, Integer> v7;
 	public static Hashtable<String, Integer> g7;
 	public static Hashtable<String, Integer> h7;
@@ -93,7 +94,7 @@ public class MorphemeServer {
 		}	
 		
 		definitions = new ArrayList<String>(di.definitions());
-		personalWords = new ArrayList<String>((ArrayList<String>) di.addPersonalWords(new ArrayList<String>()));
+		personalWords = (Hashtable<String, Integer>) di.addPersonalWords(new Hashtable<String, Integer>());
 		v7 = di.vghn67("v7.txt", new Hashtable<String, Integer>());
 		g7 = di.vghn67("g7.txt", new Hashtable<String, Integer>());
 		h7 = di.vghn67("h7.txt", new Hashtable<String, Integer>());
@@ -105,8 +106,11 @@ public class MorphemeServer {
 	}
 	
 	public static int countLines(String definitions) throws IOException {
+		File file = new File(definitions);
+		String j = file.getAbsolutePath();
+		
 		InputStream is = new BufferedInputStream(new FileInputStream(
-				definitions));
+				j));
 		try {
 			byte[] c = new byte[1024];
 			int count = 0;

@@ -46,14 +46,17 @@ public class DictionaryInit {
 		}
 	}
 	
-	public Object addPersonalWords(Object array){
+	public Object addPersonalWords(Object array) {
 					
 		File dictionaryFile = new File("PersonalWords.txt");
-			Scanner scanner = null;
+		String h = dictionaryFile.getAbsolutePath();
+		File fileOfAbsolutePathOfFile = new File(h);
+		Scanner scanner = null;
+		
 				try {
-					scanner = new Scanner(dictionaryFile);
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
+					scanner = new Scanner(fileOfAbsolutePathOfFile);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
 				}
 				String line = "";
 				while (scanner.hasNext()){
@@ -65,7 +68,7 @@ public class DictionaryInit {
 					}
 				}
 				scanner.close();
-				
+											
 				return array;
 		
 	}
@@ -74,12 +77,17 @@ public class DictionaryInit {
 	public Hashtable<String, Integer> vghn67(String path, Hashtable<String, Integer> list){
 		
 		File dictionaryFile = new File(path);
-			Scanner scanner = null;
+		String h = dictionaryFile.getAbsolutePath();
+		File fileOfAbsolutePathOfFile = new File(h);
+		Scanner scanner = null;
+		
 				try {
-					scanner = new Scanner(dictionaryFile);
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
+					scanner = new Scanner(fileOfAbsolutePathOfFile);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
 				}
+				
+			
 				String line = "";
 				while (scanner.hasNext()){
 					line = scanner.next();
@@ -133,22 +141,27 @@ public class DictionaryInit {
 		
 		ArrayList<String> definitions = new ArrayList<String>();
 		String url = "Definitions.txt";
-		String line = "";
-		FileReader fileReader;
-		BufferedReader bufferedReader = null;
-			
-			try {
-				fileReader = new FileReader(url);
-				bufferedReader = new BufferedReader(fileReader);
+		
+		File file = new File(url);
+		String h = file.getAbsolutePath();
+		File fileOfAbsolutePathOfFile = new File(h);
+		Scanner scanner = null;
+		
+				try {
+					scanner = new Scanner(fileOfAbsolutePathOfFile);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
+		
 				
-				while ((line = bufferedReader.readLine()) != null){
+				String line = "";
+				while (scanner.hasNext()){
+					line = scanner.next();
 					definitions.add(line);
 					line = "";
 				}
-				bufferedReader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+				scanner.close();
+				
 			
 			return definitions;
 		}

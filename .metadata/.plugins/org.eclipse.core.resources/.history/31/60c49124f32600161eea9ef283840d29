@@ -1,0 +1,378 @@
+package Morpheme;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+
+public class BonusWord {
+	
+	private int bonusWordGreaterThanOrEqualTo;
+	private int bonusWordLessThanOrEqualTo;
+	private int dictionary;
+	public int boardDimensions;
+	public int minimumWordLength;
+	public int xx;
+	public int yy;
+	public boolean isWordComplete2 = false;
+	private static String[][] board;
+	
+	private String[] bonusWordExceptions = {
+		"BILITIES", "BILITY", "NESSES", "ATIONS", "ATION", "INGLY", "NESS", "INGS", "ABLE", "ABLY", "ING"
+	};
+	
+	
+
+	public BonusWord(int bonusWordGreaterThanOrEqualTo, int bonusWordLessThanOrEqualTo, int dictionary, int boardDimensions, int minimumWordLength){
+		
+		this.bonusWordGreaterThanOrEqualTo = bonusWordGreaterThanOrEqualTo;
+		this.bonusWordLessThanOrEqualTo = bonusWordLessThanOrEqualTo;
+		this.dictionary = dictionary;
+		this.boardDimensions = boardDimensions;
+		this.minimumWordLength = minimumWordLength;;
+		
+	}
+	
+	
+	public String getRandomWord(){
+		
+		boolean moveForward;
+		String randomWord;
+		
+		do {
+			
+			for (int e = 0; e < 12; e++){
+				if (boardDimensions == e) {
+					if (bonusWordGreaterThanOrEqualTo > (e * e)){
+						bonusWordGreaterThanOrEqualTo = (e * e);
+					}
+					if (bonusWordLessThanOrEqualTo > (e * e)) {
+						bonusWordLessThanOrEqualTo = (e * e);
+					}
+				}
+			}
+
+			if (bonusWordGreaterThanOrEqualTo < minimumWordLength) {
+				bonusWordGreaterThanOrEqualTo = minimumWordLength;
+			}
+			if (bonusWordLessThanOrEqualTo < minimumWordLength) {
+				bonusWordLessThanOrEqualTo = minimumWordLength;
+			}
+
+			
+		moveForward = true;
+		Random r = new Random();
+		int wordLength = 0;
+			wordLength = r.nextInt(bonusWordLessThanOrEqualTo - bonusWordGreaterThanOrEqualTo + 1);
+		int word = MorphemeServer.letterLengthGrouping.get(dictionary).get(bonusWordGreaterThanOrEqualTo + wordLength - 1).size();
+		int randomWordInt = r.nextInt(word);
+		randomWord = MorphemeServer.letterLengthGrouping.get(dictionary).get(bonusWordGreaterThanOrEqualTo + wordLength - 1).get(randomWordInt);
+		
+		int maxExceptionLength = 0;
+		
+		for (int i = 0; i < bonusWordExceptions.length; i++){
+			
+			int elementLength = bonusWordExceptions[i].length();
+			
+			if (elementLength > maxExceptionLength){
+				maxExceptionLength = elementLength;
+			}
+		}
+		
+		
+		String[] g = new String[maxExceptionLength + 1];
+		
+		for (int y = randomWord.length() - (bonusWordExceptions[bonusWordExceptions.length - 1]).length(); y >= 0; y--){
+			g[randomWord.length() - y] = randomWord.substring(y, randomWord.length());
+			if (randomWord.length() - y >= maxExceptionLength){
+				break;
+			}
+		}
+		
+		randomWord = "YOUNGBERRIES";
+		MorphemeServer.jta.setText(randomWord);
+		
+		if (randomWord.length() >= 6){
+		for (int h = 0; h < g.length; h++){
+			for (int j = 0; j < bonusWordExceptions.length; j++){
+			if (g[bonusWordExceptions[j].length()].equals(bonusWordExceptions[j])){
+				moveForward = false;
+				break;
+			}
+			}
+		}
+		}
+		
+		} while (moveForward == false || MorphemeServer.personalWords.contains(randomWord));
+				
+		return randomWord;
+
+	}
+	
+	public void embedRandomWord(String randomWord, String[][] goodBoard){
+		
+		
+		board = new String[boardDimensions][boardDimensions];
+		for (int x = 0; x < boardDimensions; x++){
+			for (int y = 0; y < boardDimensions; y++){
+				board[x][y] = goodBoard[x][y];
+			}
+		}
+		
+		String randomWordWithoutUAfterQ = "";
+		
+		for (int c = 1; c < randomWord.length() + 1; c++){
+			
+			randomWordWithoutUAfterQ = randomWordWithoutUAfterQ + randomWord.substring(c - 1, c);
+			
+			if (c != randomWord.length()){
+			if (randomWord.substring(c - 1, c).equals("Q") && randomWord.substring(c, c + 1).equals("U")){
+				c++;
+			}
+			}
+			
+			
+		}
+
+		if(!(bonusWordGreaterThanOrEqualTo == 0) && !(bonusWordLessThanOrEqualTo == 0)) {		
+			List<Integer> countingNumbers = new ArrayList<Integer>();
+			countingNumbers.add(1);
+			countingNumbers.add(2);
+			
+			while (!(countingNumbers.contains(randomWordWithoutUAfterQ.length()))) {
+
+				boolean[][] booleanArray2 = new boolean[boardDimensions][boardDimensions];
+				int counting = 0;
+				for (int aa = 0; aa < boardDimensions; aa++) {
+					for (int bb = 0; bb < boardDimensions; bb++) {
+
+						counting = 0;
+
+						for (int aaa = 0; aaa < boardDimensions; aaa++) {
+							for (int bbb = 0; bbb < boardDimensions; bbb++) {
+								booleanArray2[aaa][bbb] = false;
+								if (board[aaa][bbb].equals("*")) {
+									booleanArray2[aaa][bbb] = true;
+								}
+							}
+						}
+
+						if (booleanArray2[aa][bb] == false) {
+							booleanArray2[aa][bb] = true;
+							counting++;
+							BooleanRecursion br = new BooleanRecursion();
+							br.goingFurther(aa, bb, booleanArray2,
+									counting, randomWordWithoutUAfterQ.length(),
+									countingNumbers);
+
+						}
+					}
+				}
+				if (countingNumbers.get(countingNumbers.size() - 1) < minimumWordLength) {
+					break;
+				}
+			}
+			boolean[][] booleanTrueOrFalse = new boolean[boardDimensions][boardDimensions];
+			String[][] newPotentialboardd = new String[boardDimensions][boardDimensions];
+			boolean isWordComplete = false;
+			isWordComplete2 = false;
+
+			do {
+				
+				int randomWordSubstringLength = 1;
+				
+				for (int q = 0; q < boardDimensions; q++) {
+					for (int w = 0; w < boardDimensions; w++) {
+						newPotentialboardd[q][w] = board[q][w];
+					}
+				}
+
+				for (int q = 0; q < boardDimensions; q++) {
+					for (int w = 0; w < boardDimensions; w++) {
+						if (board[q][w].equals("*")) {
+							booleanTrueOrFalse[q][w] = true;
+						} else {
+							booleanTrueOrFalse[q][w] = false;
+						}
+					}
+				}
+
+					int randomXCoordinate;
+					int randomYCoordinate;
+					do {
+					Random v = new Random();
+					randomXCoordinate = v.nextInt(boardDimensions);
+					randomYCoordinate = v.nextInt(boardDimensions);
+					}while (booleanTrueOrFalse[randomXCoordinate][randomYCoordinate] == true);
+
+				newPotentialboardd[randomXCoordinate][randomYCoordinate] = randomWordWithoutUAfterQ.substring(0, 1);
+				
+				booleanTrueOrFalse[randomXCoordinate][randomYCoordinate] = true;
+				RandomWordLetterPlacementRecursion rwlpr = new RandomWordLetterPlacementRecursion();
+				rwlpr.goingDeeper(randomXCoordinate,
+						randomYCoordinate, newPotentialboardd, booleanTrueOrFalse,
+						randomWordSubstringLength, isWordComplete, randomWordWithoutUAfterQ);
+				for (int x = 0; x < boardDimensions; x++){
+					for (int y = 0; y < boardDimensions; y++){
+						goodBoard[x][y] = board[x][y];
+					}
+				}
+				
+				
+								
+			} while (isWordComplete2 == false && countingNumbers.contains(randomWordWithoutUAfterQ.length()));
+
+			}
+			
+		}
+	
+
+	class NumberOfFalseGreaterThanZeroRecursion extends RandomWordLetterPlacementRecursion {
+
+		
+		public void goingFurther(int p, int d, int randomXCoordinate, int randomYCoordinate, boolean[][] booleanTrueOrFalse){
+			
+		p = randomXCoordinate;
+		d = randomYCoordinate;
+		
+			Random v = new Random();
+		   		int aa = v.nextInt(3); 
+		  		int bb = v.nextInt(3);
+		  		 if (aa == 0){
+		  			 p = randomXCoordinate - 1;
+		  		 } else if (aa == 1) {
+		  			 p = randomXCoordinate;
+		  		 } else if (aa == 2){
+		  			p = randomXCoordinate + 1;
+		  		 }
+		  		
+		  		 
+		  		 if (bb == 0){
+		  			d = randomYCoordinate - 1;
+		  		 } else if (bb == 1) {
+		  			 d = randomYCoordinate;
+		  		 } else if (bb == 2){
+		  			d = randomYCoordinate + 1;
+		  		 }
+			
+		  		  if (!((p >= 0) && (p < board.length) && (d >= 0) && (d < board.length)) || ((p == randomXCoordinate) && (d == randomYCoordinate)) || booleanTrueOrFalse[p][d] == true){
+		  			goingFurther(p, d, randomXCoordinate, randomYCoordinate, booleanTrueOrFalse);
+	     	    			} else {
+	     	    				
+	     	    				xx = p;
+	     	    				yy = d;
+	     	    			}
+			
+			
+		   	    				
+		       	    		}
+	}
+
+
+
+	class RandomWordLetterPlacementRecursion{
+		
+		 
+		public void goingDeeper(int randomXCoordinate, int randomYCoordinate, String[][] newPotentialboardd, boolean[][] booleanTrueOrFalse, int randomWordSubstringLength, boolean isWordComplete, String randomWordWithoutUAfterQ){
+			if (randomWordSubstringLength == randomWordWithoutUAfterQ.length()){
+				isWordComplete2 = true;
+					isWordComplete = true;
+					for (int e = 0; e < boardDimensions; e++){
+						for (int r = 0; r < boardDimensions; r++){
+							board[e][r] = newPotentialboardd[e][r];
+						}
+					}
+			}
+				
+			xx = randomXCoordinate;
+			yy = randomYCoordinate;
+			
+			 int numberOfFalse = 0;
+		  		for (int jj = xx - 1; jj <= xx + 1; jj++) {
+		     	      for (int kk = yy - 1; kk <= yy + 1; kk++) {
+			 	  			if ((jj >= 0) && (jj < board.length) && (kk >= 0) && (kk < board.length)){
+			       	    		  
+			       	    		if (!((jj == randomXCoordinate) && (kk == randomYCoordinate))) {
+
+			       	    			
+			 	  			if (booleanTrueOrFalse[jj][kk] == false){
+			 	    				numberOfFalse++;
+			 	  			}
+			 	    			}
+			 	    			}}}
+
+		  		if (numberOfFalse > 0){
+		  			NumberOfFalseGreaterThanZeroRecursion nofgrzr = new NumberOfFalseGreaterThanZeroRecursion();
+		  		
+		  			nofgrzr.goingFurther(xx, yy, randomXCoordinate, randomYCoordinate, booleanTrueOrFalse);
+		  			
+		  			if (isWordComplete2 == false){
+				
+		       	    	  if ((xx >= 0) && (xx < board.length) && (yy >= 0) && (yy < board.length)){
+		       	    		  
+		       	    		if (!((xx == randomXCoordinate) && (yy == randomYCoordinate))) {
+
+		       	    			if (booleanTrueOrFalse[xx][yy] == false){
+		       	    				randomWordSubstringLength++;
+		       	    				booleanTrueOrFalse[xx][yy] = true;
+		       	    				newPotentialboardd[xx][yy] = randomWordWithoutUAfterQ.substring(randomWordSubstringLength - 1, randomWordSubstringLength);
+
+		       	    			goingDeeper(xx, yy, newPotentialboardd, booleanTrueOrFalse, randomWordSubstringLength, isWordComplete, randomWordWithoutUAfterQ);
+		       	    	
+		       	    			}
+		       	    			
+		       	    		}
+		       	    		}}
+		       	    	}}
+	}
+
+
+	
+	class BooleanRecursion {
+
+		public void goingFurther(int aa, int bb,
+				boolean[][] booleanArray2, int counting,
+				int randomWordLengthAfterQ, List<Integer> countingNumbers) {
+			if (!(countingNumbers.contains(randomWordLengthAfterQ))) {
+				for (int kk = aa - 1; kk <= aa + 1; kk++) {
+					for (int ll = bb - 1; ll <= bb + 1; ll++) {
+
+						if ((kk >= 0) && (kk < board.length) && (ll >= 0)
+								&& (ll < board.length)) {
+							if (!((kk == aa) && (ll == bb))) {
+
+								if (counting == randomWordLengthAfterQ) {
+									break;
+								}
+								
+
+								if (booleanArray2[kk][ll] == true) {
+									continue;
+								}
+								
+								counting++;
+								
+								if (!(countingNumbers.contains(counting))) {
+									countingNumbers.add(counting);
+								}
+								booleanArray2[aa][bb] = true;
+
+								goingFurther(kk, ll, booleanArray2,
+										counting, randomWordLengthAfterQ,
+										countingNumbers);
+								booleanArray2[kk][ll] = false;
+								
+								counting--;
+
+							}
+						}
+					}
+
+				}
+
+			}
+
+		}
+	}
+}
+
