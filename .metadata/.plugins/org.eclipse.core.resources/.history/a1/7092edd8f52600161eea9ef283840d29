@@ -89,28 +89,20 @@ public class DictionaryInit {
 	
 	
 	public Hashtable<String, Integer> vghn67(String path, Hashtable<String, Integer> list){
-	
-		File file = new File(path);
-		String h = file.getAbsolutePath();
-
-FileReader fileReader;
-BufferedReader bufferedReader = null;
-	
-	try {
-		fileReader = new FileReader(h);
-		bufferedReader = new BufferedReader(fileReader);
 		
-		String line = "";
-		while ((line = bufferedReader.readLine()) != null){
-			list.put(line, 1);
-			line = "";
-		}
-		bufferedReader.close();
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
-		
-				
+		File dictionaryFile = new File(path);
+			Scanner scanner = null;
+				try {
+					scanner = new Scanner(dictionaryFile);
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				}
+				String line = "";
+				while (scanner.hasNext()){
+					line = scanner.next();
+					list.put(line, 1);
+				}
+				scanner.close();
 				
 				return list;
 		
