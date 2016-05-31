@@ -47,28 +47,31 @@ public class DictionaryInit {
 	}
 	
 	public Object addPersonalWords(Object array){
-					
-		File dictionaryFile = new File("PersonalWords.txt");
-			Scanner scanner = null;
-				try {
-					scanner = new Scanner(dictionaryFile);
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				String line = "";
-				while (scanner.hasNext()){
-					line = scanner.next();
-					if (array instanceof ArrayList<?>){
-						((ArrayList<String>) array).add(line);
-					} else if (array instanceof Hashtable<?, ?>){
-						((Hashtable<String, Integer>) array).put(line, 1);
-					}
-				}
-				scanner.close();
-				
-				return array;
 		
+String url = "PersonalWords.txt";
+String line = "";
+FileReader fileReader;
+BufferedReader bufferedReader = null;
+
+try {
+	fileReader = new FileReader(url);
+	bufferedReader = new BufferedReader(fileReader);
+	
+	while ((line = bufferedReader.readLine()) != null){
+		if (array instanceof ArrayList<?>){
+			((ArrayList<String>) array).add(line);
+		} else if (array instanceof Hashtable<?, ?>){
+			((Hashtable<String, Integer>) array).put(line, 1);
+		}
 	}
+	bufferedReader.close();
+} catch (IOException e) {
+	e.printStackTrace();
+}
+	
+	return array;
+
+}
 	
 	
 	public Hashtable<String, Integer> vghn67(String path, Hashtable<String, Integer> list){
