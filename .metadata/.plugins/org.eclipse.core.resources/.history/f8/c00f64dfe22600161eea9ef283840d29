@@ -132,7 +132,7 @@ public class MorphemeClientThread extends Thread {
 				
 		if (dictionary == 0 && MorphemeServer.canWeUsePersonalizedWordList == true){
 		for (int v = 0; v < wordsInBoard.size(); v++){
-			if (!MorphemeServer.personalWords.contains(wordsInBoard.get(v))){
+			if (!MorphemeServer.personalWords.containsKey(wordsInBoard.get(v))){
 			wordCountInBoardExcludingPersonalWords++;
 			}
 		}
@@ -216,7 +216,7 @@ public class MorphemeClientThread extends Thread {
 		
 			
 		for (int f = 0; f < wordsInBoard.size(); f++){
-			if (hashInQuestion.containsKey(wordsInBoard.get(f))){
+			if (hashInQuestion.containsKey(wordsInBoard.get(f)) && !MorphemeServer.personalWords.containsKey(wordsInBoard.get(f))){
 				number++;
 			}
 		}

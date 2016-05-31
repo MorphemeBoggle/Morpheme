@@ -89,7 +89,6 @@ public class BonusWord {
 			}
 		}
 		
-		randomWord = "YOUNGBERRIES";
 		MorphemeServer.jta.setText(randomWord);
 		
 		if (randomWord.length() >= 6){
@@ -103,7 +102,7 @@ public class BonusWord {
 		}
 		}
 		
-		} while (moveForward == false || MorphemeServer.personalWords.contains(randomWord));
+		} while (moveForward == false || MorphemeServer.personalWords.containsKey(randomWord));
 				
 		return randomWord;
 
