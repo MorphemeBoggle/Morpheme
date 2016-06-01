@@ -1,0 +1,290 @@
+package Morpheme;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class MorphemeClientThread extends Thread {
+	
+	private Socket socket;
+	private ArrayList<MorphemeClientThread> threads;
+	public ObjectInputStream is;
+	public ObjectOutputStream os;
+	public boolean isThisClientDead = false;
+	
+	public int dictionary;
+	public int percentageOfAccepted;
+	public int boardDimensions;
+	public int minimumWordLength;
+	public int minimumWordCount;
+	public int[] freq;
+	public int bonusWordGreaterThan;
+	public int bonusWordLessThan;
+	
+	String username = "hi";
+	int ID = 0;
+	
+	public MorphemeClientThread(Socket socket, ArrayList<MorphemeClientThread> threads){
+		this.socket = socket;
+		this.threads = threads;
+		
+		int f = 0;
+		boolean torf = false;
+		ArrayList<Integer> iDS = new ArrayList<Integer>();
+		for (int i = 0; i < MorphemeServer.threads.size(); i++){
+			iDS.add(MorphemeServer.threads.get(i).ID);
+		}
+		System.out.println(iDS);
+		do {
+			
+			torf = false;
+			
+			f++;
+			
+			System.out.println(iDS + " " + f);
+		
+		if (iDS.contains(f)){
+			torf = true;
+		}
+		
+		System.out.println(f);
+	
+		
+		} while (torf == true);
+		
+		ID = f;
+				
+		System.out.println(ID);
+	}
+	
+	public void run(){
+		
+		try {
+			os = new ObjectOutputStream(socket.getOutputStream());
+			is = new ObjectInputStream(socket.getInputStream());
+		} catch (IOException e){
+			e.printStackTrace();
+			close();
+		}
+		
+		
+			
+		mainActivity();
+				        
+		
+		
+	}
+	
+	private void mainActivity(){
+		
+		Object message = "";
+					
+		while (true){
+					
+					try {
+						message = is.readObject();
+					
+				if (message instanceof ArrayList<?>){
+					
+					ArrayList g = (ArrayList) message;
+					String gg = (String) g.get(0);
+					 
+						 if (gg.equals("load board")){
+								
+								g.remove(0);
+								
+								dictionary = (int) g.get(0);
+								percentageOfAccepted = (int) g.get(1);
+								boardDimensions = (int) g.get(2);
+								minimumWordLength = (int) g.get(3);
+								minimumWordCount = (int) g.get(4);
+								bonusWordGreaterThan = (int) g.get(5);
+								bonusWordLessThan = (int) g.get(6);
+								freq = (int[]) g.get(7);
+
+								loadBoard();
+							}
+							
+				}
+					} catch (ClassNotFoundException e) {
+						isThisClientDead = true;
+						close();
+					} catch (IOException e) {
+						isThisClientDead = true;
+						close();
+					}
+				
+		}
+			
+	
+	}
+
+	
+	public void loadBoard(){
+
+		String[][] board;
+		ArrayList<String> wordsInBoard;
+		BonusWord bw = new BonusWord(bonusWordGreaterThan, bonusWordLessThan, dictionary, boardDimensions, minimumWordLength);
+		String randomWord = bw.getRandomWord();
+		int wordCountInBoardExcludingPersonalWords;
+		
+		int count = 0;
+		
+		do {
+	
+		wordCountInBoardExcludingPersonalWords = 0;
+		board = new LoadBoard().getBoard(boardDimensions, freq);
+		bw.embedRandomWord(randomWord, board);
+		wordsInBoard = new SolverList(board, MorphemeServer.dictWordHashTables.get(dictionary), MorphemeServer.potentialWordHashTables.get(dictionary), minimumWordLength);
+		
+		if (wordsInBoard.size() < minimumWordCount) continue;
+		
+		count++;
+		
+		if (count == 2000){
+			randomWord = bw.getRandomWord();
+			continue;
+		}
+		
+		if (isBoardUnique(wordsInBoard) == false){
+			wordsInBoard.clear();
+			continue;
+		}
+				
+		if (dictionary == 0 && MorphemeServer.canWeUsePersonalizedWordList == true){
+		for (int v = 0; v < wordsInBoard.size(); v++){
+			if (!MorphemeServer.personalWords.contains(wordsInBoard.get(v))){
+			wordCountInBoardExcludingPersonalWords++;
+			}
+		}
+		} else {
+			wordCountInBoardExcludingPersonalWords = wordsInBoard.size();
+		}
+		
+		} while (wordCountInBoardExcludingPersonalWords < minimumWordCount);
+				
+		
+		
+		Collections.sort(wordsInBoard, new OrderingListByLength());
+		
+		String g = "";
+		for (int k = 0; k < boardDimensions; k++){
+			String b = "";
+			for (int l = 0; l < boardDimensions; l++){
+				b = b + board[k][l] + " ";
+			}	
+			g = g + b + "\n";
+		}
+		
+		System.out.println(g);
+		System.out.println(wordsInBoard);
+		
+		String lettersForBoardStringToPassThrough = "";
+		
+		for (int u = 0; u < boardDimensions; u++){
+			for (int h = 0; h < boardDimensions; h++){
+				lettersForBoardStringToPassThrough = lettersForBoardStringToPassThrough + board[u][h];
+			}
+		}
+
+		send("board" + lettersForBoardStringToPassThrough);
+
+	}
+	
+	public boolean isBoardUnique(ArrayList<String> wordsInBoard){
+		
+		boolean torf = true;
+		
+		if (wordsInBoard.size() > 0){
+			
+		torf = false;
+					
+		double good = (howManyWordsInArrayInFile(wordsInBoard, "v6"));
+		good = good + (howManyWordsInArrayInFile(wordsInBoard, "g6"));
+		good = good + (howManyWordsInArrayInFile(wordsInBoard, "v7"));
+		good = good + (howManyWordsInArrayInFile(wordsInBoard, "g7"));
+		double bad = (howManyWordsInArrayInFile(wordsInBoard, "h6"));
+		bad = bad + (howManyWordsInArrayInFile(wordsInBoard, "n6"));
+		bad = bad + (howManyWordsInArrayInFile(wordsInBoard, "h7"));
+		bad = bad + (howManyWordsInArrayInFile(wordsInBoard, "n7"));
+		double total = (double) (good + bad);
+		double percentDouble = (double) (good / total) * 100;
+		int percentInt = Integer.parseInt(String.format("%.0f", percentDouble));
+		
+		if (total != 0 && percentInt >= percentageOfAccepted){
+			torf = true;
+		}
+		
+		}
+		
+		return torf;
+	}
+	
+	
+	public int howManyWordsInArrayInFile(ArrayList<String> wordsInBoard, String type){
+	
+		int number = 0;
+		Hashtable<String, Integer> hashInQuestion = null;
+		
+		if (type.equals("v7")) hashInQuestion = MorphemeServer.v7;
+		if (type.equals("g7")) hashInQuestion = MorphemeServer.g7;
+		if (type.equals("h7")) hashInQuestion = MorphemeServer.h7; 
+		if (type.equals("n7")) hashInQuestion = MorphemeServer.n7;
+		if (type.equals("v6")) hashInQuestion = MorphemeServer.v6;
+		if (type.equals("g6")) hashInQuestion = MorphemeServer.g6;
+		if (type.equals("h6")) hashInQuestion = MorphemeServer.h6;
+		if (type.equals("n6")) hashInQuestion = MorphemeServer.n6;
+		
+			
+		for (int f = 0; f < wordsInBoard.size(); f++){
+			if (hashInQuestion.containsKey(wordsInBoard.get(f))){
+				number++;
+			}
+		}
+		
+		return number;
+	}
+
+	
+	
+private void send(Object message){
+		
+		try {
+			os.writeObject(message);
+			os.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void close(){
+		try {
+			MorphemeClientThread matchingThread = null;
+			for (int i = 0; i < MorphemeServer.threads.size(); i++){
+				if (MorphemeServer.threads.get(i).ID == this.ID){
+					matchingThread = MorphemeServer.threads.get(i);
+					break;
+				}
+			}
+			
+			if (matchingThread != null){
+				matchingThread.os.close();
+				matchingThread.is.close();
+				matchingThread.socket.close();
+				MorphemeServer.threads.remove(matchingThread);
+			}
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+
+	
+}

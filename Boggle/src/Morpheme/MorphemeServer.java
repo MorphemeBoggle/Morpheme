@@ -12,10 +12,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-/**import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;**/
-
 public class MorphemeServer {
 	
 	public static boolean canWeUsePersonalizedWordList = true;	
@@ -46,12 +42,6 @@ public class MorphemeServer {
 	public MorphemeServer(){
 		
 		initArraysAndHashes();
-		
-		/**JFrame jf = new JFrame();
-		jf.setBounds(0,0,500,500);
-	    jf.getContentPane().add(deleteAfter());
-		jf.setVisible(true);
-		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);**/
 	
 		try {
 			serverSocket = new ServerSocket(6780, 100);
@@ -59,26 +49,20 @@ public class MorphemeServer {
 			e.printStackTrace();
 		}
 		
-		do {
-			try {
+	while (true) {
+
+		try {
 				
-			socket = serverSocket.accept();
+			socket = serverSocket.accept();	
 			MorphemeClientThread clientThread = new MorphemeClientThread(socket, threads);
 			threads.add(clientThread);
 			clientThread.start();
 			
-			for (int j = 0; j < threads.size(); j++){
-				if (threads.size() != 0){
-					if (threads.get(j).isThisClientDead == true){
-						threads.remove(threads.get(j));
-					}
-				}
-			}
 		} catch (IOException e){
 			e.printStackTrace();
 		}
-		} while (true);
-		
+		}
+			
 	}
 	
 	private void initArraysAndHashes(){
@@ -129,22 +113,6 @@ public class MorphemeServer {
 			is.close();
 		}
 	}
-	
-/**private JPanel deleteAfter(){
-		
-		JPanel jp = new JPanel(new BorderLayout());
-	
-		jta = new JTextArea();
-		Font myFont = new Font("Monaco", Font.BOLD, 20);
-	    Font newFont = myFont.deriveFont(50F);
-	    jta.setFont(newFont);
-	    jp.add(jta, BorderLayout.CENTER);
-	    jp.setBounds(0,0,400,400);
-		jp.setVisible(true);
-		jp.setOpaque(true);
-		
-		return jp;
-	}**/
 	
 	public static void main(String[] args){
 		new MorphemeServer();

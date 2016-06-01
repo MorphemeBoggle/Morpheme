@@ -81,7 +81,7 @@ public class DictionaryInit {
 				e.printStackTrace();
 			}
 								
-			System.out.println(array);
+			//System.out.println(array);
 			
 				return array;
 		

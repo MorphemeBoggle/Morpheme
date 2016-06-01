@@ -1,0 +1,157 @@
+package Morpheme;
+
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Hashtable;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+public class MorphemeServer {
+	
+	public static boolean canWeUsePersonalizedWordList = true;	
+	
+	public static JTextArea jta = new JTextArea();
+	
+	public ServerSocket serverSocket;
+	public Socket socket;
+	
+	public static ArrayList<MorphemeClientThread> threads = new ArrayList<MorphemeClientThread>();
+	
+	public static String[] dictionaryFileNames = { "TWL", "CSW" };
+	public static ArrayList<ArrayList<String>> dictionaryArrayLists = new ArrayList<ArrayList<String>>();
+	public static ArrayList<Hashtable<String, Integer>> dictWordHashTables = new ArrayList<Hashtable<String, Integer>>();
+	public static ArrayList<Hashtable<String, Integer>> potentialWordHashTables = new ArrayList<Hashtable<String, Integer>>();
+	public static ArrayList<ArrayList<ArrayList<String>>> letterLengthGrouping = new ArrayList<ArrayList<ArrayList<String>>>();
+	public static ArrayList<String> definitions;
+	public static Hashtable<String, Integer> personalWords;
+	public static Hashtable<String, Integer> v7;
+	public static Hashtable<String, Integer> g7;
+	public static Hashtable<String, Integer> h7;
+	public static Hashtable<String, Integer> n7;
+	public static Hashtable<String, Integer> v6;
+	public static Hashtable<String, Integer> g6;
+	public static Hashtable<String, Integer> h6;
+	public static Hashtable<String, Integer> n6;
+	
+	public MorphemeServer(){
+		
+		initArraysAndHashes();
+		
+		JFrame jf = new JFrame();
+		jf.setBounds(0,0,500,500);
+	    jf.getContentPane().add(deleteAfter());
+		jf.setVisible(true);
+		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	
+		try {
+			serverSocket = new ServerSocket(4444, 100);
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		
+		do {
+			try {
+				
+				socket = serverSocket.accept();
+				
+				for (int j = 0; j < threads.size(); j++){
+					if (threads.size() != 0){
+						if (threads.get(j).isThisClientDead == true){
+							threads.remove(threads.get(j));
+						}
+					}
+				}
+				
+			MorphemeClientThread clientThread = new MorphemeClientThread(socket, threads);
+			threads.add(clientThread);
+			clientThread.start();
+			
+			
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		} while (true);
+		
+	}
+	
+	private void initArraysAndHashes(){
+		
+		DictionaryInit di = new DictionaryInit();
+		
+		for (int h = 0; h < dictionaryFileNames.length; h++){
+			
+			dictionaryArrayLists.add(new ArrayList<String>(di.addDictionary(dictionaryFileNames[h] + ".txt", canWeUsePersonalizedWordList)));
+			potentialWordHashTables.add(new Hashtable<String, Integer>(di.potentialWordArrayListToHashTable(dictionaryArrayLists.get(h))));
+			dictWordHashTables.add(new Hashtable<String, Integer>(di.dictArrayListToHashTable(dictionaryArrayLists.get(h))));
+			letterLengthGrouping.add(new ArrayList<ArrayList<String>>(di.letterLengthGrouping(dictionaryArrayLists.get(h))));
+		}	
+		
+		definitions = new ArrayList<String>(di.definitions());
+		personalWords = (Hashtable<String, Integer>) di.addPersonalWords(new Hashtable<String, Integer>());
+		v7 = di.vghn67("v7.txt", new Hashtable<String, Integer>());
+		g7 = di.vghn67("g7.txt", new Hashtable<String, Integer>());
+		h7 = di.vghn67("h7.txt", new Hashtable<String, Integer>());
+		n7 = di.vghn67("n7.txt", new Hashtable<String, Integer>());
+		v6 = di.vghn67("v6.txt", new Hashtable<String, Integer>());
+		g6 = di.vghn67("g6.txt", new Hashtable<String, Integer>());
+		h6 = di.vghn67("h6.txt", new Hashtable<String, Integer>());
+		n6 = di.vghn67("n6.txt", new Hashtable<String, Integer>());
+	}
+	
+	public static int countLines(String definitions) throws IOException {
+		File file = new File(definitions);
+		String j = file.getAbsolutePath();
+		
+		InputStream is = new BufferedInputStream(new FileInputStream(
+				j));
+		try {
+			byte[] c = new byte[1024];
+			int count = 0;
+			int readChars = 0;
+			boolean empty = true;
+			while ((readChars = is.read(c)) != -1) {
+				empty = false;
+				for (int i = 0; i < readChars; ++i) {
+					if (c[i] == '\n') {
+						++count;
+					}
+				}
+			}
+			return (count == 0 && !empty) ? 1 : count;
+		} finally {
+			is.close();
+		}
+	}
+	
+private JPanel deleteAfter(){
+		
+		JPanel jp = new JPanel(new BorderLayout());
+	
+		jta = new JTextArea();
+		Font myFont = new Font("Monaco", Font.BOLD, 20);
+	    Font newFont = myFont.deriveFont(50F);
+	    jta.setFont(newFont);
+	    jp.add(jta, BorderLayout.CENTER);
+	    jp.setBounds(0,0,400,400);
+		jp.setVisible(true);
+		jp.setOpaque(true);
+		
+		return jp;
+	}
+	
+	public static void main(String[] args){
+		new MorphemeServer();
+	}
+	
+
+}

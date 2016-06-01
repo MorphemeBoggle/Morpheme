@@ -17,7 +17,6 @@ public class MorphemeClientThread extends Thread {
 	private ArrayList<MorphemeClientThread> threads;
 	public ObjectInputStream is;
 	public ObjectOutputStream os;
-	public boolean isThisClientDead = false;
 	
 	public int dictionary;
 	public int percentageOfAccepted;
@@ -29,10 +28,32 @@ public class MorphemeClientThread extends Thread {
 	public int bonusWordLessThan;
 	
 	String username = "hi";
+	int ID = 0;
 	
 	public MorphemeClientThread(Socket socket, ArrayList<MorphemeClientThread> threads){
 		this.socket = socket;
 		this.threads = threads;
+		
+		int f = 0;
+		boolean torf = false;
+		ArrayList<Integer> iDS = new ArrayList<Integer>();
+		for (int i = 0; i < MorphemeServer.threads.size(); i++){
+			iDS.add(MorphemeServer.threads.get(i).ID);
+		}
+		do {
+			
+			torf = false;
+			
+			f++;
+					
+		if (iDS.contains(f)){
+			torf = true;
+		}	
+		
+		} while (torf == true);
+		
+		ID = f;
+				
 	}
 	
 	public void run(){
@@ -41,25 +62,18 @@ public class MorphemeClientThread extends Thread {
 			os = new ObjectOutputStream(socket.getOutputStream());
 			is = new ObjectInputStream(socket.getInputStream());
 		} catch (IOException e){
-			e.printStackTrace();
 			close();
 		}
 		
-		try {
-			
-				          mainActivity();
+		mainActivity();
 				        
-		} finally {
-			close();
-		}
-		
 	}
 	
 	private void mainActivity(){
 		
 		Object message = "";
 					
-		while (true){
+		while (!message.equals("done")){
 					
 					try {
 						message = is.readObject();
@@ -86,10 +100,22 @@ public class MorphemeClientThread extends Thread {
 							}
 							
 				}
+				
+				if (message instanceof String){
+					
+					if (((String) message).startsWith("terminate server")){
+						System.exit(0);
+					}
+					
+				}
+				
+				
 					} catch (ClassNotFoundException e) {
 						close();
+						message = "done";
 					} catch (IOException e) {
 						close();
+						message = "done";
 					}
 				
 		}
@@ -165,7 +191,11 @@ public class MorphemeClientThread extends Thread {
 			}
 		}
 
-		send("board" + lettersForBoardStringToPassThrough);
+		Object[] parametersArray = { "load board", lettersForBoardStringToPassThrough, randomWord };
+
+		ArrayList<Object> boardParticulars = addElementsFrom(parametersArray);
+		
+		send(boardParticulars);
 
 	}
 	
@@ -223,7 +253,16 @@ public class MorphemeClientThread extends Thread {
 		return number;
 	}
 
-	
+	private ArrayList<Object> addElementsFrom(Object[] elements){
+		
+		ArrayList array = new ArrayList();
+		
+		for (int h = 0; h < elements.length; h++){
+			array.add(elements[h]);
+		}
+		
+		return array;
+	}
 	
 private void send(Object message){
 		
@@ -240,7 +279,7 @@ private void send(Object message){
 		try {
 			MorphemeClientThread matchingThread = null;
 			for (int i = 0; i < MorphemeServer.threads.size(); i++){
-				if (MorphemeServer.threads.get(i).username.equals(this.username)){
+				if (MorphemeServer.threads.get(i).ID == this.ID){
 					matchingThread = MorphemeServer.threads.get(i);
 					break;
 				}
