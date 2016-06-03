@@ -67,7 +67,7 @@ public class MorphemeServer {
 		
 		DictionaryInit di = new DictionaryInit();
 		
-		for (int h = 0; h < dictioaryFileNames.length; h++){
+		for (int h = 0; h < dictionaryFileNames.length; h++){
 			
 			dictionaryArrayLists.add(new ArrayList<String>(di.addDictionary(dictionaryFileNames[h] + ".txt", canWeUsePersonalizedWordList)));
 			potentialWordHashTables.add(new Hashtable<String, Integer>(di.potentialWordArrayListToHashTable(dictionaryArrayLists.get(h))));
