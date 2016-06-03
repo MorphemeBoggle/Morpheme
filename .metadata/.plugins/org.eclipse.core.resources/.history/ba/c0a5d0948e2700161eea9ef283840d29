@@ -16,6 +16,8 @@ public class MorphemeServer {
 	
 	public static boolean canWeUsePersonalizedWordList = true;	
 	
+	//public static JTextArea jta = new JTextArea();
+	
 	public ServerSocket serverSocket;
 	public Socket socket;
 	
